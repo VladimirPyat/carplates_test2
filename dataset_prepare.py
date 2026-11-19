@@ -12,7 +12,7 @@ def main():
     ap = argparse.ArgumentParser(prog="dataset_prepare", description="Подготовка датасета по этапам")
     sub = ap.add_subparsers(dest="command", required=True)
     stage0_hash_dedup.register(sub)
-    #stage1_audit_files.register(sub)
+    stage1_audit_files.register(sub)
     args = ap.parse_args()
     args.out = args.out or DEFAULT_OUT
     args.func(args)

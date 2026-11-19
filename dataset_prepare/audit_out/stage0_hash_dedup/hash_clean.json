@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-11-19T21:44:45.917672+00:00",
+  "summary": {
+    "moved": 1,
+    "skipped": 0,
+    "quarantine": "/work/plates_detect_test/dataset_prepare/audit_out/stage0_hash_dedup/quarantine"
+  },
+  "deferred": [],
+  "notes": []
+}

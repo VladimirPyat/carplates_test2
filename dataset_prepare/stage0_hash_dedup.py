@@ -2,13 +2,13 @@
 
 
 Запуск проверки:
-    python3 dataset_prepare.py hash-find --root /_dataset --copy-to /_dataset/dupes_review
+    python3 dataset_prepare.py hash-find --root ./_dataset --copy-to ./dataset_prepare/dupes_review
     # смотрим dupes_review/group_0001/...,
     # отчет в <out>/dupes_exact.csv (keep / remove / skip)
 
 Удаление найденных дублей (перемещение в quarantine, не delete):
-    python3 dataset_prepare.py hash-clean --root /_dataset           # dry-run, только план
-    python3 dataset_prepare.py hash-clean --root /_dataset --apply   # переместить + лог
+    python3 dataset_prepare.py hash-clean --root ./_dataset           # dry-run, только план
+    python3 dataset_prepare.py hash-clean --root ./_dataset --apply   # переместить + лог
 """
 import shutil
 from collections import defaultdict
@@ -101,6 +101,7 @@ def cmd_find(args):
     summary = {"images_scanned": n, "dup_groups": gid, "cross_split_groups": cross,
                "to_remove": sum(r["action"] == "remove" for r in plan)}
     common.write_report(out, "hash_find", summary, DEFERRED, args.note)
+    common.append_journal(out_root, "hash-find", summary, args)
     print(f"scanned={n}  dup_groups={gid}  cross_split={cross}  to_remove={summary['to_remove']}")
     print(f"план: {out / 'dupes_exact.csv'}")
 
@@ -132,7 +133,7 @@ def cmd_clean(args):
     out/hash_clean.md/json. Метки не трогает — сирот поймает этап 1.
     """
     root = Path(args.root).resolve()
-    _, out = common.prepare_out(args, __file__)
+    out_root, out = common.prepare_out(args, __file__)
     plan_path = Path(args.plan) if args.plan else out / "dupes_exact.csv"
     quarantine = Path(args.quarantine) if args.quarantine else out / "quarantine"
 
@@ -165,4 +166,5 @@ def cmd_clean(args):
     append_csv(out / "removed_log.csv", log, ["ts", "rel_path", "quarantine_path", "md5", "group_id"])
     summary = {"moved": len(log), "skipped": len(skipped), "quarantine": str(quarantine)}
     common.write_report(out, "hash_clean", summary, DEFERRED, args.note)
+    common.append_journal(out_root, "hash-clean", summary, args)
     print(f"moved={len(log)}  skipped={len(skipped)}  лог: {out / 'removed_log.csv'}")

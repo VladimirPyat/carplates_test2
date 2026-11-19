@@ -14,6 +14,14 @@ TEST_DIR = "test"
 SPLITS = (TRAIN_DIR, VAL_DIR, TEST_DIR)
 UNKNOWN_SPLIT = "unknown"
 
+def base_parser():
+    p = argparse.ArgumentParser(add_help=False)
+    p.add_argument("--root", required=True, help="корень датасета")
+    p.add_argument("--out", default=None, help="папка артефактов")
+    p.add_argument("--note", action="append", default=[], help="заметка в отчёт")
+    return p
+
+
 def prepare_out(args, stage_file: str):
     """Готовит папки артефактов этапа: out_root/<имя модуля>.
 
@@ -25,12 +33,21 @@ def prepare_out(args, stage_file: str):
     out.mkdir(parents=True, exist_ok=True)
     return out_root, out
 
-def base_parser():
-    p = argparse.ArgumentParser(add_help=False)
-    p.add_argument("--root", required=True, help="корень датасета")
-    p.add_argument("--out", default=None, help="папка артефактов")
-    p.add_argument("--note", action="append", default=[], help="заметка в отчёт")
-    return p
+
+def append_journal(out_root: Path, command: str, summary: dict, args=None):
+    """Дописывает запись о запуске команды в out_root/journal.jsonl (append-only).
+
+    Одна JSON-строка на запуск: время, команда, сводка, параметры.
+    История всего пайплайна в одном файле; снапшот-отчёты этапов
+    остаются 'последним состоянием' и перезаписываются.
+    """
+    rec = {"ts": datetime.now(timezone.utc).isoformat(), "command": command, "summary": summary}
+    if args is not None:
+        # func — объект функции, не сериализуется; остальное из argparse — str/bool/list
+        rec["params"] = {k: v for k, v in vars(args).items() if k != "func"}
+    out_root.mkdir(parents=True, exist_ok=True)
+    with open(out_root / "journal.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
 def iter_images(root: Path, skip=()):
@@ -44,6 +61,7 @@ def iter_images(root: Path, skip=()):
 
 
 def md5_file(p: Path) -> str:
+    """Получение хэша"""
     h = hashlib.md5()
     with open(p, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
