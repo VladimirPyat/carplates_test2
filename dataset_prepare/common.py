@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
+LABEL_EXTS = {".txt", ".xml"}
+ACTION_KEEP, ACTION_REMOVE, ACTION_SKIP, ACTION_FIX = "keep", "remove", "skip", "fix"
+LABEL_KINDS = tuple(sorted(e.lstrip(".") for e in LABEL_EXTS))  # ("txt", "xml")
 
 # Соглашение о папках сплитов: root/train, root/val, root/test. Файлы вне этих папок получают split=unknown.
 TRAIN_DIR = "train"
@@ -20,6 +23,14 @@ def base_parser():
     p.add_argument("--out", default=None, help="папка артефактов")
     p.add_argument("--note", action="append", default=[], help="заметка в отчёт")
     return p
+
+def split_of(rel: Path) -> str:
+    """Сплит по первой папке под root (константы SPLITS), иначе unknown
+    Соглашение единственное: root/train, root/val, root/test (константы common).
+    """
+    if len(rel.parts) > 1 and rel.parts[0] in SPLITS:
+        return rel.parts[0]
+    return UNKNOWN_SPLIT
 
 
 def prepare_out(args, stage_file: str):

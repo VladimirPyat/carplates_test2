@@ -28,17 +28,6 @@ DEFERRED = [
 ]
 
 
-def _split_of(rel: Path) -> str:
-    """Определяет сплит по первой папке под root, без эвристик.
-
-    Соглашение единственное: root/train, root/val, root/test (константы common).
-    Файл в корне root или вне этих папок -> unknown.
-    """
-    if len(rel.parts) > 1 and rel.parts[0] in common.SPLITS:
-        return rel.parts[0]
-    return common.UNKNOWN_SPLIT
-
-
 def register(sub):
     """Регистрирует команды этапа 0 в общем CLI (dataset_prepare.py).
 
@@ -84,13 +73,13 @@ def cmd_find(args):
         if len(members) < 2:
             continue
         gid += 1
-        ordered = sorted(members, key=lambda r: (SPLIT_PRIORITY.get(_split_of(r), 2), str(r)))
+        ordered = sorted(members, key=lambda r: (SPLIT_PRIORITY.get(common.split_of(r), 2), str(r)))
         keep = ordered[0]
-        splits = {_split_of(r) for r in members}
+        splits = {common.split_of(r) for r in members}
         cross += len(splits - {common.UNKNOWN_SPLIT}) > 1
         for rel in ordered:
             plan.append({"group_id": gid, "md5": h, "rel_path": str(rel),
-                         "split": _split_of(rel),
+                         "split": common.split_of(rel),
                          "action": "keep" if rel == keep else "remove",
                          "reason": "keep by split priority" if rel == keep else f"duplicate of {keep}"})
 

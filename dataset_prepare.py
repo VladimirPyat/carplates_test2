@@ -1,7 +1,7 @@
 
 import argparse
 
-from dataset_prepare import stage0_hash_dedup
+from dataset_prepare import stage0_hash_dedup, stage1_audit_files
 
 DEFAULT_OUT = "dataset_prepare/audit_out"  # корень артефактов; этапы кладут в подпапки по имени модуля
 
