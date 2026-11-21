@@ -5,14 +5,14 @@
 либо по уникальному стему внутри того же сплита. Политики обработки — в константах.
 
 Workflow:
-    1. python dataset_prepare.py files-find --root ./_dataset
+    1. python3 dataset_prepare.py files-find --root ./_dataset
        # manifest.csv (все файлы) + flagged.csv (проблемные, action из констант)
-    2. python dataset_prepare.py images-apply --root ./_dataset           # dry-run
+    2. python3 dataset_prepare.py images-apply --root ./_dataset           # dry-run
        python dataset_prepare.py images-apply --root ./_dataset --apply
        # плохие изображения -> quarantine, non-RGB -> конвертация (оригинал в backup)
     3. смотрим quarantine, нормальные возвращаем обратно вручную
     4. повторяем files-find (состав и md5 изменились)
-    5. python dataset_prepare.py labels-apply --root ./_dataset --apply
+    5. python3 dataset_prepare.py labels-apply --root ./_dataset --apply
        # чистка меток-сирот отдельной командой
 """
 import shutil

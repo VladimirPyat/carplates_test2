@@ -1,7 +1,7 @@
 
 import argparse
 
-from dataset_prepare import stage0_hash_dedup, stage1_audit_files
+from dataset_prepare import stage0_hash_dedup, stage1_audit_files, stage2_boxes
 
 DEFAULT_OUT = "dataset_prepare/audit_out"  # корень артефактов; этапы кладут в подпапки по имени модуля
 
@@ -13,6 +13,8 @@ def main():
     sub = ap.add_subparsers(dest="command", required=True)
     stage0_hash_dedup.register(sub)
     stage1_audit_files.register(sub)
+    stage2_boxes.register(sub)
+    stage3_cvat_pack.register(sub)
     args = ap.parse_args()
     args.out = args.out or DEFAULT_OUT
     args.func(args)

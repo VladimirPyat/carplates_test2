@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-11-21T15:25:05.729122+00:00",
+  "summary": {
+    "images": 530,
+    "nc": 27,
+    "classes_json": true,
+    "flag_rows": 4,
+    "ERROR": 0,
+    "WARN": 4,
+    "INFO": 0,
+    "by_code": {
+      "DUP_BOX": 1,
+      "SMALL_BOX": 3
+    },
+    "cross_images_both": 530,
+    "cross_images_unmatched": 2,
+    "cross_drift_pairs": 2046,
+    "cross_matched_pairs": 3528,
+    "cross_iou_p50": 0.849,
+    "cross_iou_min": 0.565,
+    "cross_unmatched_yolo": 2,
+    "cross_unmatched_voc": 2,
+    "cross_unmatched_side_p50": 1.0
+  },
+  "deferred": [
+    "Исправление боксов/классов — вручную в CVAT, скрипт только флагует",
+    "GEOMETRY_DRIFT/FORMAT_UNMATCHED — системный сдвиг ~1px между форматами, только агрегат в отчёте",
+    "obj.names — генерируется на этапе упаковки под CVAT из classes.json",
+    "Мелкие боксы не удаляем: удаление бокса при живом объекте = неразмеченный позитив",
+    "Решение по imgsz / тайлингу / P2 — после статистики размеров"
+  ],
+  "notes": []
+}

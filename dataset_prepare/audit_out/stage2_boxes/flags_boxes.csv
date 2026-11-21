@@ -1,0 +1,5 @@
+rel_path,frame_index,frame_no,format,box_index,severity,code,detail
+train/ckj6oy5ry001d246a6nvzttor.png,389,390,yolo+voc,5,WARN,DUP_BOX,"боксы 5/7, IoU=0.82"
+train/ckj6s0a44001m246ask4atw7q.png,396,397,yolo+voc,6,WARN,SMALL_BOX,сторона 1.00px < 5
+train/ckj6zjj76001g246aj6dvegai.png,449,450,yolo+voc,5,WARN,SMALL_BOX,сторона 1.00px < 5
+train/ckn75vzi80019306874pvuexa.jpeg,454,455,yolo+voc,5,WARN,SMALL_BOX,сторона 4.00px < 5
