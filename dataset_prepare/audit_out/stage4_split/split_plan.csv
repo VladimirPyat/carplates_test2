@@ -1,0 +1,34 @@
+rel_path,signature,cur_split,target_split,action,reason
+train/ckicuj2r7000c246a6fg2c4eg.jpeg,6046JAA,train,unknown,quarantine_train_twin,"train-близнец 1;1: убираем, test-пример станет уникальным (val)"
+train/ckie4znsf004c246a83yfo64r.jpeg,6924HEA,train,unknown,quarantine_train_twin,"train-близнец 1;1: убираем, test-пример станет уникальным (val)"
+train/ckj702m5b001k246awz9n209g.png,9315NRJ,train,unknown,quarantine_train_twin,"train-близнец 1;1: убираем, test-пример станет уникальным (val)"
+train/ckictsenl0000246a2itn28ts.jpeg,0528LUX,train,test_new,move_to_test_new,train_only_singleton
+train/ckn77vabg00kl3068mhzdrnvq.jpeg,7194NRA,train,test_new,move_to_test_new,train_only_singleton
+train/ckj6odd9d0017246adhu1jgq1.png,361GZJ,train,test_new,move_to_test_new,train_only_singleton
+train/ckifm5kg7009w246ausiz9e5i.jpeg,462KTV,train,test_new,move_to_test_new,train_only_singleton
+train/ckie7s3cc0068246a3yq3r357.jpeg,7997EBS,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7cgkqf001s3h66ulbd74z0.jpeg,4309BHD,train,test_new,move_to_test_new,train_only_singleton
+train/ckicu9ere0007246agdm9mb4i.jpeg,7403RUA,train,test_new,move_to_test_new,train_only_singleton
+train/ckicyvftn001f246a7hel9c3d.jpeg,1979ERD,train,test_new,move_to_test_new,train_only_singleton
+train/ckiflc6ct009e246aqrxfkls8.jpeg,1950SED,train,test_new,move_to_test_new,train_only_singleton
+train/ckiea1gye007j246ax6j7sx3m.jpeg,4875UTA,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7deu7101hs3068m7efvnxq.jpeg,8235ULD,train,test_new,move_to_test_new,train_only_singleton
+train/ckifl8pnc009a246amjopk2mx.jpeg,4073SEJ,train,test_new,move_to_test_new,train_only_singleton
+train/ckie78b68005t246acr1etb45.jpeg,6049VHB,train,test_new,move_to_test_new,train_only_singleton
+train/ckn77t68m00jz3068vrhhs415.jpeg,5417NED,train,test_new,move_to_test_new,train_only_singleton
+train/ckifk3ke7008m246a5skqtojy.jpeg,4810RSB,train,test_new,move_to_test_new,train_only_singleton
+train/ckj6oy5ry001d246a6nvzttor.png,3170HZB,train,test_new,move_to_test_new,train_only_singleton
+train/ckifjvspv008h246ag4bnaro7.jpeg,5091SGD,train,test_new,move_to_test_new,train_only_singleton
+train/ckn761b3j002l3068u4pxoxll.jpeg,1704UNJ,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7a9a4q00pv306804fq4kil.jpeg,6134GLD,train,test_new,move_to_test_new,train_only_singleton
+train/ckn77wti900l73068fqmsc7zn.jpeg,6487SGD,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7cd7vt015e3068szo8o3o8.jpeg,4949UVB,train,test_new,move_to_test_new,train_only_singleton
+train/ckj2rd98h000j246aq0w2gjys.png,008ZED,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7d39dd007p3h66gjeio0dd.jpeg,7855THJ,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7d0pi701c83068l3u59ybi.jpeg,4817TLD,train,test_new,move_to_test_new,train_only_singleton
+train/ckie97j4j0072246aktrk3p90.jpeg,1993EBD,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7b2qoh00x73068nu6pzvr2.jpeg,6497VTD,train,test_new,move_to_test_new,train_only_singleton
+train/ckicyza76001i246ay8xxw8vb.jpeg,9370XKA,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7bfs1j010d3068xuxxlfp6.jpeg,874RTJ,train,test_new,move_to_test_new,train_only_singleton
+train/ckn7dir8501jg3068balc54jg.jpeg,7067EAD,train,test_new,move_to_test_new,train_only_singleton
+train/ckn76cx66005t3068j4uv8zkw.jpeg,4829DED,train,test_new,move_to_test_new,train_only_singleton

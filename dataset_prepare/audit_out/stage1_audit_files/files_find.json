@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-11-22T09:28:26.059649+00:00",
+  "generated_at": "2026-11-22T11:29:03.335150+00:00",
   "summary": {
-    "images": 497,
-    "labels": 517,
+    "images": 494,
+    "labels": 494,
     "coverage": {
-      "txt_only": 497
+      "txt_only": 494
     },
-    "orphans": 20,
-    "ERROR": 20,
+    "orphans": 0,
+    "ERROR": 0,
     "WARN": 30,
     "INFO": 0,
-    "flagged_files": 50,
+    "flagged_files": 30,
     "image_remove": 0,
     "image_fix": 0,
-    "label_remove": 20
+    "label_remove": 0
   },
   "deferred": [
     "Геометрия боксов, дубли боксов, min размер в px, маппинг классов — этап 2",

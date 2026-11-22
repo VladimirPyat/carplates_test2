@@ -1,11 +1,11 @@
 # boxes_stats
 
-- images: 497
-- instances: 3459
+- images: 494
+- instances: 3438
 - classes_source: reused
 - nc: 27
 - classes_conflicts: 0
-- coverage: {'txt_only': 497}
+- coverage: {'txt_only': 494}
 - objects_per_image_min: 4
 - objects_per_image_p50: 7.0
 - objects_per_image_max: 7
@@ -16,12 +16,12 @@
 - difficult: 0
 - truncated: 0
 - sigs_unique: 204
-- sigs_in_both: 19
-- sigs_train_only: 179
-- sigs_test_only: 6
+- sigs_in_both: 16
+- sigs_train_only: 149
+- sigs_test_only: 9
 - test_images_total: 29
-- test_images_shared_sig: 23
-- test_images_unique_sig: 6
+- test_images_shared_sig: 20
+- test_images_unique_sig: 9
 - top_overlap: ['5732NXD train=40 test=3', '3757JED train=1 test=2', '5542BVJ train=3 test=2', '2039SZA train=6 test=1', '2948URD train=5 test=1']
 - parse_flags: 0
 

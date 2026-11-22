@@ -14,6 +14,7 @@ LABEL_KINDS = tuple(sorted(e.lstrip(".") for e in LABEL_EXTS))  # ("txt", "xml")
 TRAIN_DIR = "train"
 VAL_DIR = "val"
 TEST_DIR = "test"
+TEST_NEW_DIR = "test_new"
 SPLITS = (TRAIN_DIR, VAL_DIR, TEST_DIR)
 UNKNOWN_SPLIT = "unknown"
 

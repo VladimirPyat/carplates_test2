@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-11-22T09:37:13.558100+00:00",
+  "generated_at": "2026-11-22T11:32:50.092776+00:00",
   "summary": {
-    "images": 497,
-    "instances": 3459,
+    "images": 494,
+    "instances": 3438,
     "classes_source": "reused",
     "nc": 27,
     "classes_conflicts": 0,
     "coverage": {
-      "txt_only": 497
+      "txt_only": 494
     },
     "objects_per_image_min": 4,
     "objects_per_image_p50": 7.0,
@@ -19,12 +19,12 @@
     "difficult": 0,
     "truncated": 0,
     "sigs_unique": 204,
-    "sigs_in_both": 19,
-    "sigs_train_only": 179,
-    "sigs_test_only": 6,
+    "sigs_in_both": 16,
+    "sigs_train_only": 149,
+    "sigs_test_only": 9,
     "test_images_total": 29,
-    "test_images_shared_sig": 23,
-    "test_images_unique_sig": 6,
+    "test_images_shared_sig": 20,
+    "test_images_unique_sig": 9,
     "top_overlap": [
       "5732NXD train=40 test=3",
       "3757JED train=1 test=2",

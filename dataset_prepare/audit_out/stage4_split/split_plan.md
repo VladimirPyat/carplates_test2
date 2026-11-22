@@ -1,0 +1,21 @@
+# split_plan
+
+- pool: 87
+- test_new: 30
+- quarantine: 3
+- train_after: 435
+- val_unchanged: 29
+- val_unique_after: 9
+- val_shared_leak_after: 20
+- val_no_signature: 0
+- classes_covered: 27
+- classes_total: 27
+- classes_missing: []
+- test_new_min_class_instances: 2
+
+## Осознанно пропущено
+
+- val = старый test, переименовывается вручную позже; 15 общих подписей в нём остаются утечкой осознанно
+- 10 кадров val уникальны после карантина train-близнецов подписей 1;1
+- Финальная честная оценка — только по бывшему test_new, трогать его до конца нельзя
+- DINO-дедуп пропущен: близкие дубли внутри train не искажают holdout-оценку
