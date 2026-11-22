@@ -1,0 +1,21 @@
+# cvat_pack
+
+- images_total: 530
+- missing: 0
+- nc: 27
+- sort_key: name
+- scope: split
+- test_frames: 29
+- test_labels: 29
+- test_no_label: 0
+- test_first_frame: ckicup6z1000g246a7fphj2ry.jpeg
+- train_frames: 501
+- train_labels: 501
+- train_no_label: 0
+- train_first_frame: ckictsenl0000246a2itn28ts.jpeg
+
+## Осознанно пропущено
+
+- Обратный импорт правок из CVAT в датасет — отдельная команда (имя -> путь по манифесту)
+- Поиск похожих (DINO) и стратификация val — следующие этапы, после правок
+- Мини-task только по flagged-кадрам — не делаем, ходим по frame_no в общем задании

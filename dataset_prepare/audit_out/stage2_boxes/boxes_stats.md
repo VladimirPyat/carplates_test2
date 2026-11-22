@@ -1,20 +1,28 @@
 # boxes_stats
 
-- images: 530
-- instances: 3530
-- classes_source: voted
+- images: 497
+- instances: 3459
+- classes_source: reused
 - nc: 27
 - classes_conflicts: 0
-- coverage: {'both': 530}
-- objects_per_image_min: 1
+- coverage: {'txt_only': 497}
+- objects_per_image_min: 4
 - objects_per_image_p50: 7.0
-- objects_per_image_max: 8
+- objects_per_image_max: 7
 - zero_object_images: 0
-- imbalance_ratio: 7.59
-- side_px_p50: 15.0
+- imbalance_ratio: 7.5
+- side_px_p50: 17.0
 - ar_p95: 5.38
 - difficult: 0
 - truncated: 0
+- sigs_unique: 204
+- sigs_in_both: 19
+- sigs_train_only: 179
+- sigs_test_only: 6
+- test_images_total: 29
+- test_images_shared_sig: 23
+- test_images_unique_sig: 6
+- top_overlap: ['5732NXD train=40 test=3', '3757JED train=1 test=2', '5542BVJ train=3 test=2', '2039SZA train=6 test=1', '2948URD train=5 test=1']
 - parse_flags: 0
 
 ## Осознанно пропущено
@@ -23,4 +31,3 @@
 - GEOMETRY_DRIFT/FORMAT_UNMATCHED — системный сдвиг ~1px между форматами, только агрегат в отчёте
 - obj.names — генерируется на этапе упаковки под CVAT из classes.json
 - Мелкие боксы не удаляем: удаление бокса при живом объекте = неразмеченный позитив
-- Решение по imgsz / тайлингу / P2 — после статистики размеров

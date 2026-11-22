@@ -42,13 +42,15 @@ CROSS_CHECK_PER_BOX = False       # True -> писать drift по боксам
 
 # --- Нумерация кадров: должна совпадать с порядком в задании CVAT ---
 FRAME_SORT_KEY = "name"          # "rel_path" | "name" — ключ сортировки списка изображений
-FRAME_NUMBER_SCOPE = "global"     # "global" (один task на всё) | "split" (task на каждый сплит)
+FRAME_NUMBER_SCOPE = "split"     # "global" (один task на всё) | "split" (task на каждый сплит)
 
 # --- Политики вывода ---
 SPLIT_ALL = "all"
 FORMAT_YOLO, FORMAT_VOC, FORMAT_BOTH = "yolo", "voc", "both"
 
 # --- Имена артефактов (контракт между этапами) ---
+COMBINATIONS_NAME = "combinations.csv"
+COMBINATIONS_FIELDS = ["signature", "count_train", "count_test", "count_total", "splits"]
 CLASSES_NAME = "classes.json"
 STATS_NAME = "stats.csv"
 FLAGS_NAME = "flags_boxes.csv"
@@ -62,7 +64,7 @@ DEFERRED = [
     "GEOMETRY_DRIFT/FORMAT_UNMATCHED — системный сдвиг ~1px между форматами, только агрегат в отчёте",
     "obj.names — генерируется на этапе упаковки под CVAT из classes.json",
     "Мелкие боксы не удаляем: удаление бокса при живом объекте = неразмеченный позитив",
-    "Решение по imgsz / тайлингу / P2 — после статистики размеров",
+
 ]
 
 
@@ -113,6 +115,63 @@ def _verify_manifest(root: Path, rows):
             flags.append(_flag(r["rel_path"], "WARN", "MANIFEST_STALE", "md5 изменился после files-find"))
         ok.append(r)
     return ok, flags
+
+
+def _signature(boxes: list, names: list) -> str:
+    """Подпись кадра = последовательность имён классов его боксов, отсортированная по центру X.
+
+    Один и тот же номерной знак даёт одинаковую подпись независимо от порядка
+    разметки в txt. Используется и здесь (частоты), и на этапе сплита (дедуп).
+    Кадр без боксов возвращает пустую строку (фоновые не группируем).
+    """
+    if not boxes:
+        return ""
+    ordered = sorted(boxes, key=lambda b: b["cx"])
+    return "".join(names[b["cls"]] if b["cls"] < len(names) else f"?{b['cls']}" for b in ordered)
+
+
+def _combinations(anns, names):
+    """Сквозные частоты подписей номеров: одна строка на уникальную подпись.
+
+    Подпись = последовательность имён классов боксов, отсортированная по центру X.
+    count_train / count_test / count_total дают сквозную картину:
+    подпись в обоих сплитах = один номер снят и в train, и в test (утечка),
+    подпись только в test = потенциально уникальный для test номер.
+    Колонка splits — где встречается (train / test / train;test).
+    Возвращает (rows, summary): rows для combinations.csv, summary для отчёта.
+    """
+    per_split = defaultdict(Counter)
+    for e in anns.values():
+        sig = _signature(e["yolo"], names)
+        if sig:
+            per_split[e["split"]][sig] += 1
+
+    sigs = sorted({sig for c in per_split.values() for sig in c})
+    rows, overlap_top = [], []
+    n_both = test_total = test_shared = 0
+    for sig in sigs:
+        tr = per_split[common.TRAIN_DIR][sig]
+        te = per_split[common.TEST_DIR][sig]
+        total = sum(c[sig] for c in per_split.values())
+        rows.append({"signature": sig, "count_train": tr, "count_test": te,
+                     "count_total": total,
+                     "splits": ";".join(s for s in sorted(per_split) if per_split[s][sig])})
+        if tr and te:
+            n_both += 1
+            test_shared += te
+            overlap_top.append((sig, tr, te))
+        test_total += te
+    overlap_top.sort(key=lambda t: t[2], reverse=True)
+
+    summary = {"sigs_unique": len(sigs),
+               "sigs_in_both": n_both,
+               "sigs_train_only": sum(1 for r in rows if r["count_train"] and not r["count_test"]),
+               "sigs_test_only": sum(1 for r in rows if r["count_test"] and not r["count_train"]),
+               "test_images_total": test_total,
+               "test_images_shared_sig": test_shared,
+               "test_images_unique_sig": test_total - test_shared,
+               "top_overlap": [f"{s} train={tr} test={te}" for s, tr, te in overlap_top[:5]]}
+    return rows, summary
 
 
 def _frame_map(rows):
@@ -405,10 +464,13 @@ def _pct(values, q):
 
 
 def cmd_stats(args):
-    """Справочник классов + итоговая статистика по классам за один парсинг.
+    """Справочник классов + итоговая статистика + частоты комбинаций за один парсинг.
 
-    Артефакты: classes.json (nc, names, conflicts) и stats.csv (class x split, включая all).
-    Покрытие форматов и источник справочника — в отчёте, отдельными файлами не выдаются.
+    Артефакты:
+        classes.json      — справочник (nc, names, conflicts), по умолчанию переиспользуется
+        stats.csv         — стата по классам x сплитам (включая all)
+        combinations.csv  — частоты подписей номеров (последовательность классов) по сплитам
+    Покрытие форматов, источник справочника и сводка комбинаций — в отчёте.
     """
     root = Path(args.root).resolve()
     out_root, out = common.prepare_out(args, __file__)
@@ -448,8 +510,12 @@ def cmd_stats(args):
                       "share": round(a["inst"] / total, 4) if total else 0,
                       "small": a["small"], "medium": a["medium"], "large": a["large"],
                       "side_px_min": round(min(a["sides"]), 1) if a["sides"] else 0,
-                      "side_px_p50": round(_pct(a["sides"], 50), 1), "rel_p50": round(_pct(a["rels"], 50), 4)})
+                      "side_px_p50": round(_pct(a["sides"], 50), 1),
+                      "rel_p50": round(_pct(a["rels"], 50), 4)})
     write_csv(out / STATS_NAME, stats, STATS_FIELDS)
+
+    comb_rows, comb_summary = _combinations(anns, names)
+    write_csv(out / COMBINATIONS_NAME, comb_rows, COMBINATIONS_FIELDS)
 
     cov = Counter(("both" if e["has_txt"] and e["has_xml"] else
                    "txt_only" if e["has_txt"] else "xml_only" if e["has_xml"] else "none")
@@ -463,12 +529,25 @@ def cmd_stats(args):
                "zero_object_images": sum(1 for n in per_image if n == 0),
                "imbalance_ratio": round(max(inst_all) / min(inst_all), 2) if inst_all and min(inst_all) else None,
                "side_px_p50": round(_pct(all_sides, 50), 1), "ar_p95": round(_pct(ars, 95), 2),
-               "difficult": difficult, "truncated": truncated, "parse_flags": len(flags) + len(pflags)}
+               "difficult": difficult, "truncated": truncated,
+               **comb_summary,
+               "parse_flags": len(flags) + len(pflags)}
     common.write_report(out, "boxes_stats", summary, DEFERRED, args.note)
     common.append_journal(out_root, "boxes-stats", summary, args)
+
     print(f"images={len(anns)}  instances={total}  nc={cinfo['nc']}  classes={cinfo['classes_source']}")
     print(f"coverage={dict(cov)}  imbalance={summary['imbalance_ratio']}")
-    print(f"classes: {out / CLASSES_NAME}  stats: {out / STATS_NAME}")
+
+    # Глобальные метрики по подписям (сквозная статистика)
+    print(f"sigs: unique={comb_summary['sigs_unique']}  in_both={comb_summary['sigs_in_both']}  "
+          f"train_only={comb_summary['sigs_train_only']}  test_only={comb_summary['sigs_test_only']}")
+    print(f"test images: total={comb_summary['test_images_total']}  "
+          f"shared_sig={comb_summary['test_images_shared_sig']}  "
+          f"unique_sig={comb_summary['test_images_unique_sig']}")
+    if comb_summary.get('top_overlap'):
+        print(f"top overlap (train & test): {', '.join(comb_summary['top_overlap'][:3])}")
+
+    print(f"classes: {out / CLASSES_NAME}  stats: {out / STATS_NAME}  combinations: {out / COMBINATIONS_NAME}")
 
 
 def cmd_check(args):

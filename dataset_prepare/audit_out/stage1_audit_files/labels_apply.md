@@ -1,6 +1,6 @@
 # labels_apply
 
-- moved: 126
+- moved: 20
 - fixed: 0
 - skipped: 0
 - quarantine: /work/plates_detect_test/dataset_prepare/audit_out/stage1_audit_files/quarantine
@@ -11,5 +11,5 @@
 - Похожие (не точные) дубли — этап 3
 - Blur / экспозиция / цвет — пропущено осознанно, просмотр в CVAT
 - EXIF: только флаг, нормализация не выполнялась
-- RGBA: альфа отбрасывается без композита по допущению , перепроверить позже
+- RGBA: альфа отбрасывается по допущению , перепроверить позже
 - Сплит / стратификация / data.yaml — этап 3

@@ -14,6 +14,10 @@ Workflow:
     4. повторяем files-find (состав и md5 изменились)
     5. python3 dataset_prepare.py labels-apply --root ./_dataset --apply
        # чистка меток-сирот отдельной командой
+Полная очистка
+python3 dataset_prepare.py clean-all --root ./_dataset
+# Исполнить:
+python3 dataset_prepare.py clean-all --root ./_dataset --apply
 """
 import shutil
 import xml.etree.ElementTree as ET
@@ -29,7 +33,7 @@ from .text_utils import append_csv, read_csv, write_csv
 KIND_IMAGE, KIND_LABEL = "image", "label"
 
 # Политики: какие коды флагов во что превращаются
-IMAGE_REMOVE_CODES = {"IMAGE_READ", "EMPTY_FILE", "SMALL_IMAGE"}
+IMAGE_REMOVE_CODES = {"IMAGE_READ", "EMPTY_FILE", "NO_LABEL"}           #"SMALL_IMAGE" - убран после ручной проверки
 IMAGE_FIX_CODES = {"MODE_NON_RGB"}
 LABEL_REMOVE_CODES = {"ORPHAN_LABEL"}
 MANUAL_CODES = {"STEM_DUP", "LABEL_AMBIG", "LABEL_EXT_DUP", "XML_PARSE"}
@@ -62,7 +66,7 @@ DEFERRED = [
     "Похожие (не точные) дубли — этап 3",
     "Blur / экспозиция / цвет — пропущено осознанно, просмотр в CVAT",
     "EXIF: только флаг, нормализация не выполнялась",
-    "RGBA: альфа отбрасывается без композита по допущению , перепроверить позже",
+    "RGBA: альфа отбрасывается по допущению , перепроверить позже",
     "Сплит / стратификация / data.yaml — этап 3",
 ]
 
@@ -82,6 +86,13 @@ def register(sub):
     p = sub.add_parser("labels-apply", parents=[common.base_parser()], help="метки: сироты -> quarantine")
     _add_apply_args(p)
     p.set_defaults(func=cmd_labels_apply)
+
+    p = sub.add_parser("clean-all", parents=[common.base_parser()],
+                       help="images-apply + labels-apply: удалить плохие изображения и метки-сироты")
+    p.add_argument("--flagged", default=None, help="csv проблемных (по умолчанию out/flagged.csv)")
+    p.add_argument("--quarantine", default=None, help="по умолчанию out/quarantine")
+    p.add_argument("--apply", action="store_true", help="без флага только dry-run")
+    p.set_defaults(func=cmd_clean_all)
 
 
 def _add_apply_args(p):
@@ -109,6 +120,16 @@ def _collect_files(root: Path, skip=()):
         elif ext in common.LABEL_EXTS:
             labels.append(p)
     return images, labels
+
+
+def cmd_clean_all(args):
+    """Запускает images-apply и labels-apply последовательно с теми же параметрами.
+
+    Удобно для финальной очистки: удаляет плохие изображения и метки-сироты одной командой.
+    Журнал пишется дважды (по разу на каждую команду) — это нормально.
+    """
+    cmd_images_apply(args)
+    cmd_labels_apply(args)
 
 
 def _build_label_index(root: Path, labels):
@@ -383,12 +404,20 @@ def _run_apply(args, kind: str, command: str):
     ts = datetime.now(timezone.utc).isoformat()
     for src, dst, r in moves:
         if dst.exists():
-            skipped.append((r["rel_path"], "quarantine path exists"))
-            continue
+            if common.md5_file(dst) == r["md5"]:
+                # идентичная копия уже в карантине — просто убираем из датасета
+                src.unlink()
+                removed_log.append({"ts": ts, "rel_path": r["rel_path"], "quarantine_path": str(dst),
+                                    "md5": r["md5"], "kind": kind,
+                                    "reason": r["reason"] + " (already_quarantined)"})
+                continue
+            # содержимое отличается — сохраняем обе версии, имя с суффиксом времени
+            dst = dst.with_name(f"{dst.name}.{ts.replace(':', '').replace('-', '')}")
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src), str(dst))
         removed_log.append({"ts": ts, "rel_path": r["rel_path"], "quarantine_path": str(dst),
                             "md5": r["md5"], "kind": kind, "reason": r["reason"]})
+
     for src, r in fixes:
         result = _convert_to_rgb(src, r["rel_path"], out / BACKUP_DIR)
         if result is None:
@@ -405,6 +434,10 @@ def _run_apply(args, kind: str, command: str):
     common.write_report(out, command.replace("-", "_"), summary, DEFERRED, args.note)
     common.append_journal(out_root, command, summary, args)
     print(f"[{command}] moved={len(removed_log)}  fixed={len(fixed_log)}  skipped={len(skipped)}")
+    for rel, reason in skipped[:10]:
+        print(f"  skip: {rel} — {reason}")
+    if len(skipped) > 10:
+        print(f"  ... и ещё {len(skipped) - 10}")
 
 
 def cmd_images_apply(args):

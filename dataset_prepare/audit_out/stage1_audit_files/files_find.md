@@ -1,16 +1,16 @@
 # files_find
 
-- images: 530
-- labels: 1186
-- coverage: {'both': 530}
-- orphans: 126
-- ERROR: 126
-- WARN: 0
+- images: 497
+- labels: 517
+- coverage: {'txt_only': 497}
+- orphans: 20
+- ERROR: 20
+- WARN: 30
 - INFO: 0
-- flagged_files: 126
+- flagged_files: 50
 - image_remove: 0
 - image_fix: 0
-- label_remove: 126
+- label_remove: 20
 
 ## Осознанно пропущено
 
@@ -18,5 +18,5 @@
 - Похожие (не точные) дубли — этап 3
 - Blur / экспозиция / цвет — пропущено осознанно, просмотр в CVAT
 - EXIF: только флаг, нормализация не выполнялась
-- RGBA: альфа отбрасывается без композита по допущению , перепроверить позже
+- RGBA: альфа отбрасывается по допущению , перепроверить позже
 - Сплит / стратификация / data.yaml — этап 3
