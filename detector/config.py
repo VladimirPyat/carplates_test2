@@ -10,13 +10,20 @@ class DetectorConfig:
     model: Path
     classes: Path
     imgsz: int = 640
-    conf_threshold: float = 0.5
+    conf_threshold: float = 0.25
     iou_threshold: float = 0.45
     device: str = "cpu"
+    # Вывод в терминал
+    verbose: bool = True
+    # Визуализация
     output_dir: Path = Path("./predictions")
     show: bool = True
     save: bool = True
     save_txt: bool = True
+    show_boxes: bool = True
+    show_labels: bool = True
+    show_signature: bool = True
+    min_confidence_label: float = 0.5
 
     @classmethod
     def from_yaml(cls, path: Path) -> "DetectorConfig":

@@ -8,8 +8,15 @@ conf_threshold: 0.35
 iou_threshold: 0.45
 device: cpu                  # cpu | cuda
 
-# Вывод
+# Вывод в терминал
+verbose: false              # false -> только signature, без списка боксов
+
+# Визуализация
 output_dir: ./predictions
 show: true
-save: true              # сохранение картинки
-save_txt: true          # сохранение лога в тектовый файл
+save: true
+save_txt: true
+show_boxes: true           # рисовать боксы
+show_labels: false          # показывать класс и confidence на боксе
+show_signature: true       # показывать собранную строку номера сверху
+min_confidence_label: 0.35  # показывать текст на боксе только если conf >= порога

@@ -5,7 +5,6 @@
 """
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import cv2
 import numpy as np
@@ -33,7 +32,7 @@ class DetectorError(RuntimeError):
 
 
 class Detector:
-    """Минималистичный детектор на базе YOLOv8 ONNX."""
+    """ детектор на базе YOLOv8 ONNX"""
 
     def __init__(self, config: DetectorConfig):
         self.cfg = config
@@ -60,7 +59,7 @@ class Detector:
             raise DetectorError(f"модель {config.model} не имеет входных тензоров")
         self.input_name = inputs[0].name
 
-        # проверяем, что вход — 4D тензор NCHW (стандарт YOLOv8)
+        # проверяем, что вход — 4D тензор  (стандарт YOLOv8)
         shape = inputs[0].shape
         if not (isinstance(shape, list) and len(shape) == 4):
             raise DetectorError(f"ожидается 4D вход (NCHW), получил shape={shape}")
@@ -74,7 +73,7 @@ class Detector:
 
         img_bgr = cv2.imread(str(image_path))
         if img_bgr is None:
-            raise DetectorError(f"не удалось прочитать изображение (битый файл?): {image_path}")
+            raise DetectorError(f"не удалось прочитать изображение : {image_path}")
 
         h, w = img_bgr.shape[:2]
         if h == 0 or w == 0:
