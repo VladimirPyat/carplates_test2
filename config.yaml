@@ -1,0 +1,15 @@
+# Пути
+model: models/best.onnx
+classes: dataset_prepare/audit_out/stage2_boxes/classes.json
+
+# Инференс
+imgsz: 640
+conf_threshold: 0.35
+iou_threshold: 0.45
+device: cpu                  # cpu | cuda
+
+# Вывод
+output_dir: ./predictions
+show: true
+save: true              # сохранение картинки
+save_txt: true          # сохранение лога в тектовый файл
