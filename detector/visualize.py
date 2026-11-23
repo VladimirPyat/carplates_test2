@@ -1,16 +1,13 @@
 """Отрисовка боксов и распознанной строки."""
 from pathlib import Path
-from typing import Optional
 
 import cv2
 import matplotlib.pyplot as plt
 
-
 from .config import DetectorConfig
-from .detector import DetectionResult
+from .entities import DetectionResult
 
 
-# палитра по классам (HSV-равномерно)
 def _palette(n: int) -> list[tuple[int, int, int]]:
     import colorsys
     return [
@@ -23,16 +20,23 @@ def _save_yolo_txt(txt_path: Path, result: DetectionResult):
     """Сохраняет детекции в формате YOLO: class_id cx cy w h (нормализованные)."""
     w, h = result.image_size
     with open(txt_path, "w", encoding="utf-8") as f:
-        for (x1, y1, x2, y2), label in zip(result.boxes, result.labels):
-            cx = ((x1 + x2) / 2) / w
-            cy = ((y1 + y2) / 2) / h
-            bw = (x2 - x1) / w
-            bh = (y2 - y1) / h
-            f.write(f"{label} {cx:.6f} {cy:.6f} {bw:.6f} {bh:.6f}\n")
+        for box in result.boxes:
+            cx, cy, bw, bh = box.to_yolo()
+            f.write(f"{box.class_id} {cx:.6f} {cy:.6f} {bw:.6f} {bh:.6f}\n")
 
 
 def draw(image_path: Path, result: DetectionResult, names: list[str],
-         config: DetectorConfig, save_path: Optional[Path] = None, show: bool = True):
+         config: DetectorConfig, save_path: Path | None = None, show: bool = True):
+    """Отрисовывает результат детекции.
+
+    Args:
+        image_path: путь к оригинальному изображению
+        result: DetectionResult с боксами и signature
+        names: список имён классов
+        config: конфигурация (настройки визуализации)
+        save_path: путь для сохранения картинки (если None — не сохраняем)
+        show: показать matplotlib окно
+    """
     img_bgr = cv2.imread(str(image_path))
     if img_bgr is None:
         raise FileNotFoundError(image_path)
@@ -42,14 +46,14 @@ def draw(image_path: Path, result: DetectionResult, names: list[str],
 
     # Рисуем боксы только если show_boxes=True
     if config.show_boxes:
-        for (x1, y1, x2, y2), label, score in zip(result.boxes, result.labels, result.scores):
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-            color = colors[label % len(colors)]
+        for box in result.boxes:
+            x1, y1, x2, y2 = int(box.x1), int(box.y1), int(box.x2), int(box.y2)
+            color = colors[box.class_id % len(colors)]
             cv2.rectangle(img_rgb, (x1, y1), (x2, y2), color, 2)
 
             # Показываем текст только если show_labels=True И conf >= порога
-            if config.show_labels and score >= config.min_confidence_label:
-                text = f"{names[label]} {score:.2f}"
+            if config.show_labels and box.confidence >= config.min_confidence_label:
+                text = f"{names[box.class_id]} {box.confidence:.2f}"
                 (tw, th), baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
                 cv2.rectangle(img_rgb, (x1, y1 - th - baseline - 2), (x1 + tw, y1), color, -1)
                 cv2.putText(img_rgb, text, (x1, y1 - baseline - 1),

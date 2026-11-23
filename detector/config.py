@@ -13,8 +13,15 @@ class DetectorConfig:
     conf_threshold: float = 0.25
     iou_threshold: float = 0.45
     device: str = "cpu"
+
+    # Фильтры постпроцессинга
+    class_filter: list[int] | None = None     # null = все классы, или [0, 1, 2] = только цифры
+    min_box_size: int = 0                     # минимальный размер бокса в пикселях
+    max_boxes: int | None = None              # оставить только top-k самых уверенных
+
     # Вывод в терминал
     verbose: bool = True
+
     # Визуализация
     output_dir: Path = Path("./predictions")
     show: bool = True
@@ -32,7 +39,7 @@ class DetectorConfig:
             data = yaml.safe_load(f) or {}
         data = {k: v for k, v in data.items() if v is not None}
 
-        # преобразуем пути: если относительные — относительно конфига, если абсолютные — как есть
+        # резолвим пути: если относительные — относительно конфига, если абсолютные — как есть
         config_dir = path.resolve().parent
         for key in ("model", "classes", "output_dir"):
             if key in data:

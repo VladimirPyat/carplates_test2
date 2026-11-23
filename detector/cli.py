@@ -2,15 +2,15 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional
 
 from .config import DetectorConfig
-from .detector import Detector
 from .visualize import draw
 
 
-def _resolve_config(explicit: Optional[Path], default_name: str) -> Path:
+def _resolve_config(explicit: Path | None, default_name: str) -> Path:
     if explicit:
+        if not explicit.is_file():
+            raise FileNotFoundError(f"конфиг не найден: {explicit}")
         return explicit
     candidates = [Path.cwd() / default_name, Path(__file__).resolve().parent.parent / default_name]
     for c in candidates:
@@ -19,7 +19,11 @@ def _resolve_config(explicit: Optional[Path], default_name: str) -> Path:
     raise FileNotFoundError(f"конфиг не найден: {default_name}")
 
 
-def main(argv: Optional[list[str]] = None):
+def cli_main(argv: list[str] | None = None) -> int:
+    """CLI-точка входа. Возвращает 0 при успехе, >0 при ошибках."""
+    # импортируем здесь, чтобы избежать циклических зависимостей
+    from plates_detect import Pipeline
+
     p = argparse.ArgumentParser(description="CLI-детектор номерных знаков (YOLOv8 ONNX)")
     p.add_argument("--image", type=Path, help="путь к изображению")
     p.add_argument("--dir", type=Path, help="папка с изображениями (батч)")
@@ -31,44 +35,69 @@ def main(argv: Optional[list[str]] = None):
     if not args.image and not args.dir:
         p.error("укажите --image или --dir")
 
-    config_path = _resolve_config(args.config, "config.yaml")
-    cfg = DetectorConfig.from_yaml(config_path)
-    if args.no_show:
-        cfg.show = False
-    if args.quiet:
-        cfg.verbose = False
+    try:
+        config_path = _resolve_config(args.config, "config.yaml")
+        pipeline = Pipeline.from_yaml(config_path)
+        if args.no_show:
+            pipeline.config.show = False
+        if args.quiet:
+            pipeline.config.verbose = False
+    except (FileNotFoundError, ValueError, Exception) as e:
+        print(f"[FATAL] {e}", file=sys.stderr)
+        return 2
 
-    detector = Detector(cfg)
+    cfg = pipeline.config
 
     # Краткий вывод настроек (только если не quiet)
     if cfg.verbose:
-        print(f"модель: {cfg.model}  классов: {len(detector.names)}  imgsz={cfg.imgsz}")
+        print(f"модель: {cfg.model}  классов: {len(pipeline.detector.names)}  imgsz={cfg.imgsz}")
         print(f"conf={cfg.conf_threshold}  iou={cfg.iou_threshold}  device={cfg.device}")
 
     images: list[Path] = []
     if args.image:
+        if not args.image.is_file():
+            print(f"[FATAL] файл не найден: {args.image}", file=sys.stderr)
+            return 2
         images = [args.image]
     elif args.dir:
+        if not args.dir.is_dir():
+            print(f"[FATAL] папка не найдена: {args.dir}", file=sys.stderr)
+            return 2
         images = sorted(p for p in args.dir.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"})
+        if not images:
+            print(f"[WARN] в {args.dir} нет изображений", file=sys.stderr)
+            return 0
 
+    errors = 0
     for img in images:
         try:
-            result = detector.predict(img)
+            result = pipeline.run(img)
         except Exception as e:
             print(f"[ERROR] {img.name}: {e}", file=sys.stderr)
+            errors += 1
             continue
+            # import traceback
+            # traceback.print_exc()
+            # print(f"[ERROR] {img.name}: {e}", file=sys.stderr)
+            # errors += 1
+            # continue
 
         # Основной вывод: signature всегда
-        print(f"\n[{img.name}] signature='{result.signature}'  boxes={len(result.boxes)}")
+        status = f"signature='{result.signature}'" if result.signature else "(no detection)"
+        print(f"\n[{img.name}] {status}  boxes={len(result.boxes)}")
 
         # Детальный вывод: только если verbose
         if cfg.verbose:
-            for (x1, y1, x2, y2), label, score in zip(result.boxes, result.labels, result.scores):
-                print(f"  {detector.names[label]:>2}  {score:.3f}  [{x1:.0f},{y1:.0f},{x2:.0f},{y2:.0f}]")
+            for box in result.boxes:
+                print(f"  {pipeline.detector.names[box.class_id]:>2}  {box.confidence:.3f}  "
+                      f"[{box.x1:.0f},{box.y1:.0f},{box.x2:.0f},{box.y2:.0f}]")
 
         save_path = cfg.output_dir / f"{img.stem}_pred.jpg" if cfg.save else None
-        draw(img, result, detector.names, cfg, save_path=save_path, show=cfg.show)
+        try:
+            draw(img, result, pipeline.detector.names, cfg, save_path=save_path, show=cfg.show)
+        except Exception as e:
+            print(f"[WARN] отрисовка {img.name} не удалась: {e}", file=sys.stderr)
 
-
-if __name__ == "__main__":
-    main()
+    if errors:
+        print(f"\n{errors} из {len(images)} файлов завершились с ошибкой", file=sys.stderr)
+    return errors
